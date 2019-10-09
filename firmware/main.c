@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <ctype.h>
 
 #include "ch.h"
 #include "hal.h"
@@ -1561,6 +1562,93 @@ static void cmd_uniqueid(BaseSequentialStream *chp, int argc, char *argv[]) {
 
 
 
+static void cmd_getname(BaseSequentialStream *chp, int argc, char *argv[]) {
+	(void) argc;
+	(void) argv;
+
+	const char * name = getUSBDeviceDescriptorName();
+
+	// auto-correct for nulls in utf16
+	chprintf(chp, "Name (len %d): ", USBDeviceDescriptorNameLength()/2);
+
+	for(int i = 0; i < MAX_DEVICENAME_LEN/2; ++i) {
+		if(0xff == name[i*2])
+			break;
+		chprintf(chp, "%c", name[i*2]);
+	}
+	chprintf(chp, "\r\n");
+}
+
+
+
+
+
+static char copybuffer[MAX_DEVICENAME_LEN] __attribute__((aligned(4)));
+static void cmd_setname(BaseSequentialStream *chp, int argc, char *argv[]) {
+	if(argc != 2) {
+		chprintf(chp, "Missing or excessive arguments!\r\n");
+    goto exit_with_usage;
+	}
+
+	if(0 != strcmp(argv[0], "FORCE")) {
+		chprintf(chp, "If you really mean it, the second param must be 'FORCE'!\r\n");
+    goto exit_with_usage;
+	}
+
+	const char * name = argv[1];
+
+  // make sure there is no name stored yet.
+	if(0 != USBDeviceDescriptorNameLength()) {
+    chprintf(chp, "A name already has been stored on this device!\r\n");
+		goto exit_with_usage;
+  }
+
+  // make sure new name fits (UTF16!)
+  int nameLen = strlen(name);
+  if(MAX_DEVICENAME_LEN < nameLen * 2) {
+    chprintf(chp, "Name is %d characters too long!\r\n", MAX_DEVICENAME_LEN - nameLen*2);
+		goto exit_with_usage;
+  }
+  if(0 == nameLen) {
+    chprintf(chp, "Name is empty!\r\n");
+		goto exit_with_usage;
+  }
+
+  // prepare raw buffer in UTF16 format
+	chprintf(chp, "copybuffer resides at 0x%08x\r\n", copybuffer);
+  memset(copybuffer, 0xff, sizeof(copybuffer));
+  for(int i = 0; i < nameLen; ++i) {
+    if(!isalnum(name[i]) && ('_' != name[i])) {
+      chprintf(chp, "Name contains invalid character %c (0x%02x).\r\n", name[i], (int)name[i]);
+      goto exit_with_usage;
+    }
+    copybuffer[i*2] = name[i];
+		copybuffer[i*2+1] = 0;
+  }
+
+	// store properly prepared buffer
+	wdtEnable(1);
+  int r = storeUSBDeviceDescriptorName(copybuffer);
+	wdtEnable(0);
+
+	if(r == 0) {
+		chprintf(chp, "Name stored, will be used after reset.\r\n");
+	} else {
+		chprintf(chp, "Storing name in flash failed with error %d!\r\n", r);
+	}
+	return;
+
+exit_with_usage:
+	chprintf(chp, "Usage: setname FORCE <name>\r\n"
+			"\tWrites <name> as new USB device name suffix to flash.\r\n"
+			"\tThis can only be done once.\r\n"
+			"\tReflash of firmware required to change after setting it once.\r\n");
+}
+
+
+
+
+
 static bool adc_conversion_ok;
 
 static void adc_bad_callback(ADCDriver *adcp, adcerror_t err) {
@@ -1683,8 +1771,10 @@ static const ShellCommand commands[] = {
 	{"sensor", cmd_sensor},
 	{"pollsensors", cmd_pollsensors},
 	{"uniqueid", cmd_uniqueid},
-	{"adc", cmd_adc},
 	{"reset", cmd_reset},
+	{"getname", cmd_getname},
+	{"setname", cmd_setname},
+	{"adc", cmd_adc},
 	{"send_pulses", cmd_send_pulses},
 	{"motor_rotary", cmd_motor_rotary},
 	{"motor_linear", cmd_motor_linear},
@@ -1738,6 +1828,7 @@ int main(void) {
 	/*
 	 * Initializes a serial-over-USB CDC driver.
 	 */
+	generateUSBDeviceDescriptor();
 	sduObjectInit(&SDU1);
 	sduStart(&SDU1, &serusbcfg);
 

@@ -19,8 +19,14 @@
 #define _USBCFG_H_
 
 extern const USBConfig usbcfg;
-extern SerialUSBConfig serusbcfg;
+extern const SerialUSBConfig serusbcfg;
 extern SerialUSBDriver SDU1;
+
+#define MAX_DEVICENAME_LEN 64
+extern int USBDeviceDescriptorNameLength(void);
+extern void generateUSBDeviceDescriptor(void);
+extern int storeUSBDeviceDescriptorName(char * newName);
+extern const char * getUSBDeviceDescriptorName(void);
 
 #endif  /* _USBCFG_H_ */
 

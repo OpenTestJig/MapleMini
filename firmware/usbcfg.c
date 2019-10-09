@@ -15,7 +15,11 @@
     limitations under the License.
 */
 
+#include <string.h>
+
 #include "hal.h"
+#include "usbcfg.h"
+#include "chprintf.h"
 
 /* Virtual serial port over USB.*/
 SerialUSBDriver SDU1;
@@ -162,12 +166,23 @@ static const uint8_t vcom_string1[] = {
 /*
  * Device Description string.
  */
-static const uint8_t vcom_string2[] = {
+static uint8_t vcom_string2[] = {
   USB_DESC_BYTE(2+10+8),                /* bLength.                         */
   USB_DESC_BYTE(USB_DESCRIPTOR_STRING), /* bDescriptorType.                 */
 // 1   2   3   4   5   6   7   8   9   10
   'M', 0, 'a', 0, 'p', 0, 'l', 0, 'e', 0,
-  'M', 0, 'i', 0, 'n', 0, 'i', 0
+  'M', 0, 'i', 0, 'n', 0, 'i', 0,
+
+  // space of an additional name that can be set later.
+  // max 64 u16, thus 32 bytes.
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 };
 
 #define xstr(s) str(s)
@@ -192,12 +207,102 @@ static const uint8_t vcom_string3[] = {
 /*
  * Strings wrappers array.
  */
-static const USBDescriptor vcom_strings[] = {
+static USBDescriptor vcom_strings[] = {
   {sizeof vcom_string0, vcom_string0},
   {sizeof vcom_string1, vcom_string1},
-  {sizeof vcom_string2, vcom_string2},
+  {sizeof vcom_string2 - MAX_DEVICENAME_LEN, vcom_string2},
   {sizeof vcom_string3, vcom_string3}
 };
+
+static const char deviceName[] __attribute__((aligned(4), section("text"))) = {
+  // this better be MAX_DEVICENAME_LEN 0xFF's,
+  // and also aligned and in flash section.
+  0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+  0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+  0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+  0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+  0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+  0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+  0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+  0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+};
+static char deviceNameCopy[MAX_DEVICENAME_LEN]; // FIXME
+
+int USBDeviceDescriptorNameLength(void)
+{
+  int nameLen;
+  for(nameLen = 0; nameLen < MAX_DEVICENAME_LEN; ++nameLen)
+    if(0xff == deviceNameCopy[nameLen])
+      break;
+  return nameLen;
+}
+
+void generatDeviceNameCopy(void)
+{
+  // FIXME this is a really weird bug and requires further investigation...
+  // stm32f1 flash has a weird issue where 8-bit access *can* yield a different
+  // result than 16-bit access of the same memory cell. avoid by copying to
+  // RAM with 16-bit access.
+  // FIXME this is a really weird bug and requires further investigation...
+  const uint16_t * src = (void*)deviceName;
+  uint16_t * dst = (void*)deviceNameCopy;
+  for(int i = 0; i < MAX_DEVICENAME_LEN/2; ++i) {
+    *dst = *src;
+    ++src;
+    ++dst;
+  }
+  // FIXME this is a really weird bug and requires further investigation...
+}
+
+void generateUSBDeviceDescriptor(void)
+{
+  generatDeviceNameCopy(); // FIXME
+
+  // insert device name into USB descriptor strings, if one was stored
+  int nameLen = USBDeviceDescriptorNameLength();
+
+  // no name stored?
+  if(nameLen == 0)
+    return;
+
+  // copy name and adjust size fields
+  memcpy(&(vcom_string2[vcom_string2[0]]), deviceNameCopy, nameLen);
+  vcom_string2[0] += nameLen;
+  vcom_strings[2].ud_size += nameLen;
+}
+
+const char * getUSBDeviceDescriptorName(void)
+{ return deviceNameCopy; }
+
+int storeUSBDeviceDescriptorName(char * newName)
+{
+  uint16_t * src = (void*)newName;
+  // const-cast so we write half-word wise to flash:
+  uint16_t * dst = (void*)deviceName;
+
+  for(unsigned i = 0; i < MAX_DEVICENAME_LEN / sizeof(uint16_t); ++i) {
+    FLASH->KEYR = FLASH_KEY1;
+    FLASH->KEYR = FLASH_KEY2;
+    FLASH->CR &= ~(FLASH_CR_PER | FLASH_CR_MER);
+    FLASH->CR |= FLASH_CR_PG;
+    *dst = *src;
+    while(FLASH->SR & FLASH_SR_BSY)
+      /* wait while busy */ ;
+
+    if(FLASH->SR & FLASH_SR_PGERR)
+      return -1; // not erased?
+    if(FLASH->SR & FLASH_SR_WRPRTERR)
+      return -2; // write protect error
+    if(*dst != *src)
+      return -3;
+
+    ++dst;
+    ++src;
+  }
+
+  generatDeviceNameCopy(); // FIXME
+  return 0;
+}
 
 /*
  * Handles the GET_DESCRIPTOR callback. All required descriptors must be
