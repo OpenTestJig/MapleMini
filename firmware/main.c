@@ -1811,7 +1811,7 @@ int main(void) {
 	halInit();
 	chSysInit();
 
-	/* for security reasons: all GPIOs as Input */
+	/* for safety reasons: all GPIOs as Input */
 	for(i = 0; i < sizeof(pinPorts)/sizeof(pinPorts[0]); i++) {
 		palSetPadMode(pinPorts[i].gpio, pinPorts[i].pin, PAL_MODE_INPUT);
 	}
