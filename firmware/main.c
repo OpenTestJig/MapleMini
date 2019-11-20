@@ -26,6 +26,8 @@
 #include <string.h>
 #include <math.h>
 #include <ctype.h>
+#include <pthread.h>
+#include <unistd.h>
 
 #include "ch.h"
 #include "hal.h"
@@ -280,6 +282,84 @@ static void cmd_gpio(BaseSequentialStream *chp, int argc, char *argv[]) {
 	chprintf(chp, "Bad gpio '%s'\r\n", pOpt);
 }
 
+//some variables for the blink thread
+static THD_WORKING_AREA(blinkThreadArea, 128);
+thread_t *blinkThread;
+
+
+static THD_FUNCTION(blinking, arg){
+	int i = (int) arg;
+	//endless loop of blinking lights
+	palSetPadMode(pinPorts[i].gpio, pinPorts[i].pin, PAL_MODE_OUTPUT_PUSHPULL);
+	while (!chThdShouldTerminateX()){
+		palSetPad(pinPorts[i].gpio, pinPorts[i].pin);
+		chThdSleepSeconds(1);
+		palClearPad(pinPorts[i].gpio, pinPorts[i].pin);
+		chThdSleepSeconds(1);
+	}
+	palSetPadMode(pinPorts[i].gpio, pinPorts[i].pin, PAL_MODE_INPUT);
+	return;
+}
+
+
+static void cmd_blink(BaseSequentialStream *chp, int argc, char *argv[]) {
+	//start or stop a thread for the blinking lights
+	int i;
+	char *pOpt = NULL;
+	char *sOpt = NULL;
+
+			//parse arguments
+	for(i = 0; i < argc; i++) {
+		if(strcmp(argv[i], "-s") == 0) {
+			if(++i >= argc) continue;
+#ifdef SHELL_OPTION_PARSING_DEBUG
+			chprintf(chp, "detected -s with val: %s\r\n", argv[i]);
+#endif
+			sOpt = argv[i];}
+
+
+
+			else if(strcmp(argv[i], "-p") == 0) {
+				if(++i >= argc) continue;
+#ifdef SHELL_OPTION_PARSING_DEBUG
+			chprintf(chp, "detected -p with val: %s\r\n", argv[i]);
+#endif
+			pOpt = argv[i];
+	}}
+	//if s is off then pin can be empty
+	if(!sOpt || ((strcmp(sOpt, "off") == 0) && pOpt) || ((strcmp(sOpt, "on") == 0) && !pOpt)){
+		chprintf(chp, "Usage: blink -s [state] [-p <pin>] \r\n"
+									"\twith state:\r\n"
+									"\t\ton | off\r\n"
+									"\twith pin (only if state on):\r\n"
+									"\t\t");
+									//all pins available can be blinked
+		for(i = 0; i < sizeof(pinPorts)/sizeof(pinPorts[0]); i++)
+			if(pinPorts[i].as_gpio)
+				chprintf(chp, "%s | ", pinPorts[i].pinNrString);
+
+		chprintf(chp, "\n");
+		return;
+}
+
+
+	//cancel the thread if state is set to mode
+	if (strcmp(sOpt, "off") == 0) chThdTerminate(blinkThread);
+
+	else if (strcmp(sOpt, "on") == 0){
+	//set the GPIO as output
+	for(i = 0; i < sizeof(pinPorts)/sizeof(pinPorts[0]); i++) {
+		if((pinPorts[i].as_gpio) && (strcmp(pOpt, pinPorts[i].pinNrString) == 0)) {
+
+
+
+			blinkThread = chThdCreateI(blinkThreadArea, sizeof(blinkThreadArea),
+                          				NORMALPRIO, blinking, (void*)i);
+			chThdStartI(blinkThread);
+			break;
+	}}}
+
+}
 
 
 
@@ -1768,6 +1848,7 @@ static const ShellCommand commands[] = {
 	{"version", cmd_version},
 	{"pwmcapture", cmd_pwmcapture},
 	{"pwm", cmd_pwm},
+	{"blink", cmd_blink},
 	{"sensor", cmd_sensor},
 	{"pollsensors", cmd_pollsensors},
 	{"uniqueid", cmd_uniqueid},
