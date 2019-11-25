@@ -312,20 +312,17 @@ static void cmd_blink(BaseSequentialStream *chp, int argc, char *argv[]) {
 	for(i = 0; i < argc; i++) {
 		if(strcmp(argv[i], "-s") == 0) {
 			if(++i >= argc) continue;
-#ifdef SHELL_OPTION_PARSING_DEBUG
 			chprintf(chp, "detected -s with val: %s\r\n", argv[i]);
-#endif
 			sOpt = argv[i];}
 
 
 
 			else if(strcmp(argv[i], "-p") == 0) {
 				if(++i >= argc) continue;
-#ifdef SHELL_OPTION_PARSING_DEBUG
 			chprintf(chp, "detected -p with val: %s\r\n", argv[i]);
-#endif
 			pOpt = argv[i];
-	}}
+			}
+	}
 	//if s is off then pin can be empty
 	if(!sOpt || ((strcmp(sOpt, "off") == 0) && pOpt) || ((strcmp(sOpt, "on") == 0) && !pOpt)){
 		chprintf(chp, "Usage: blink -s [state] [-p <pin>] \r\n"
@@ -340,24 +337,27 @@ static void cmd_blink(BaseSequentialStream *chp, int argc, char *argv[]) {
 
 		chprintf(chp, "\n");
 		return;
-}
+	}
 
 
-	//cancel the thread if state is set to mode
-	if (strcmp(sOpt, "off") == 0) chThdTerminate(blinkThread);
+	//cancel the thread if state is set to 0 or if there is a running thread
+	if (strcmp(sOpt, "off") == 0 || blinkThread != NULL) {
+	 	chThdTerminate(blinkThread);
+		sleep(3);
+		blinkThread = NULL;
+	} 
 
 	else if (strcmp(sOpt, "on") == 0){
-	//set the GPIO as output
-	for(i = 0; i < sizeof(pinPorts)/sizeof(pinPorts[0]); i++) {
-		if((pinPorts[i].as_gpio) && (strcmp(pOpt, pinPorts[i].pinNrString) == 0)) {
-
-
-
-			blinkThread = chThdCreateI(blinkThreadArea, sizeof(blinkThreadArea),
+		//set the GPIO as output
+		for(i = 0; i < sizeof(pinPorts)/sizeof(pinPorts[0]); i++) {
+			if((pinPorts[i].as_gpio) && (strcmp(pOpt, pinPorts[i].pinNrString) == 0)) {
+				blinkThread = chThdCreateI(blinkThreadArea, sizeof(blinkThreadArea),
                           				NORMALPRIO, blinking, (void*)i);
-			chThdStartI(blinkThread);
-			break;
-	}}}
+				chThdStartI(blinkThread);
+				break;
+			}
+		}
+	}
 
 }
 
