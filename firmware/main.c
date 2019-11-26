@@ -320,26 +320,35 @@ static void cmd_blink(BaseSequentialStream *chp, int argc, char *argv[]) {
 	if(!sOpt || ((0 == strcmp(sOpt, "off")) && pOpt) || ((0 == strcmp(sOpt, "on")) && !pOpt))
 		goto exit_with_usage;
 
-	if (strcmp(sOpt, "on") == 0 && blinkThread != NULL){
-		chprintf(chp, "blinkThread already running, please stop (set the -s option to off) before enabling another blinker\r\n");
-	} else if (strcmp(sOpt, "off") == 0 && blinkThread != NULL) {
-		chThdTerminate(blinkThread);
-		chThdWait(blinkThread);
-		blinkThread = NULL;
-		chprintf(chp, "Ok\r\n");
-	} else if (strcmp(sOpt, "off") == 0 && blinkThread == NULL) {
-		chprintf(chp, "blinkThread not found, nothing to turn off\r\n");
-	} else if (strcmp(sOpt, "on") == 0) {
-		for(i = 0; i < sizeof(pinPorts)/sizeof(pinPorts[0]); i++) {
-			if((pinPorts[i].as_gpio) && (strcmp(pOpt, pinPorts[i].pinNrString) == 0)) {
-				blinkThread = chThdCreateI(blinkThreadArea, sizeof(blinkThreadArea),
-																	 NORMALPRIO, blinkFunction, (void*)i);
-				chThdStartI(blinkThread);
-				chprintf(chp,"Ok\r\n");
-				break;
+	if (0 == strcmp(sOpt, "on")) {
+		if (blinkThread != NULL) {
+			chprintf(chp, "blinkThread already running, please stop (set the -s option to off) before enabling another blinker\r\n");
+		} else {
+			for(i = 0; i < sizeof(pinPorts)/sizeof(pinPorts[0]); i++) {
+				if((pinPorts[i].as_gpio) && (strcmp(pOpt, pinPorts[i].pinNrString) == 0)) {
+					blinkThread = chThdCreateI(blinkThreadArea, sizeof(blinkThreadArea), NORMALPRIO, blinkFunction, (void*)i);
+					chThdStartI(blinkThread);
+					chprintf(chp,"Ok\r\n");
+				}
 			}
 		}
+
+	} else if (0 == strcmp(sOpt, "off")) {
+		if (blinkThread == NULL) {
+			chprintf(chp, "no running blinkThread found, nothing to turn off\r\n");
+		} else {
+			chThdTerminate(blinkThread);
+			chThdWait(blinkThread);
+			blinkThread = NULL;
+			chprintf(chp, "Ok\r\n");
+		}
+
+	} else {
+		// should never be reached.
+		goto exit_with_usage;
 	}
+
+	return;
 
 exit_with_usage:
 	chprintf(chp, "Usage: blink -s [state] [-p <pin>] \r\n"
