@@ -207,15 +207,13 @@ static void cmd_gpio(BaseSequentialStream *chp, int argc, char *argv[]) {
 			chprintf(chp, "detected -d with val: %s\r\n", argv[i]);
 #endif
 			dOpt = argv[i];
-		}
-		else if(strcmp(argv[i], "-p") == 0) {
+		} else if(strcmp(argv[i], "-p") == 0) {
 			if(++i >= argc) continue;
 #ifdef SHELL_OPTION_PARSING_DEBUG
 			chprintf(chp, "detected -p with val: %s\r\n", argv[i]);
 #endif
 			pOpt = argv[i];
-		}
-		else if(strcmp(argv[i], "-v") == 0) {
+		} else if(strcmp(argv[i], "-v") == 0) {
 			if(++i >= argc) continue;
 #ifdef SHELL_OPTION_PARSING_DEBUG
 			chprintf(chp, "detected -v with val: %s\r\n", argv[i]);
@@ -254,8 +252,7 @@ static void cmd_gpio(BaseSequentialStream *chp, int argc, char *argv[]) {
 #else
 					chprintf(chp, "Ok\r\n");
 #endif
-				}
-				else if(strcmp(vOpt, "0") == 0) {
+				} else if(strcmp(vOpt, "0") == 0) {
 					palClearPad(pinPorts[i].gpio, pinPorts[i].pin);
 #ifdef SHELL_OPTION_PARSING_DEBUG
 					chprintf(chp, "Clear of Pin %s\r\n", pinPorts[i].pinNrString);
@@ -285,8 +282,6 @@ static void cmd_gpio(BaseSequentialStream *chp, int argc, char *argv[]) {
 static THD_WORKING_AREA(blinkThreadArea, 128);
 thread_t *blinkThread = NULL;
 
-
-
 static THD_FUNCTION(blinkFunction, arg){
 	int i = (int) arg;
 	//endless loop of blinking lights
@@ -301,7 +296,6 @@ static THD_FUNCTION(blinkFunction, arg){
 	return;
 }
 
-
 static void cmd_blink(BaseSequentialStream *chp, int argc, char *argv[]) {
 	//start or stop a thread for the blinking lights
 	int i;
@@ -314,14 +308,11 @@ static void cmd_blink(BaseSequentialStream *chp, int argc, char *argv[]) {
 			if(++i >= argc)
 				continue;
 			sOpt = argv[i];
+		} else if(strcmp(argv[i], "-p") == 0) {
+			if(++i >= argc)
+				continue;
+			pOpt = argv[i];
 		}
-
-
-			else if(strcmp(argv[i], "-p") == 0) {
-				if(++i >= argc)
-					continue;
-				pOpt = argv[i];
-			}
 	}
 
 	//if s is off then pin can be empty
@@ -340,40 +331,27 @@ static void cmd_blink(BaseSequentialStream *chp, int argc, char *argv[]) {
 		return;
 	}
 
-
-
-
 	if (strcmp(sOpt, "on") == 0 && blinkThread != NULL){
 		chprintf(chp, "blinkThread already running, please stop this (set the -s option to off) before turning another blinker on\r\n");
-		return;
-	}
-	else if (strcmp(sOpt, "off") == 0 && blinkThread != NULL) {
+	} else if (strcmp(sOpt, "off") == 0 && blinkThread != NULL) {
 		chThdTerminate(blinkThread);
-
 		chThdWait(blinkThread);
 		blinkThread = NULL;
 		chprintf(chp, "Ok\r\n");
-		return;
-	}
-	else if (strcmp(sOpt, "off") == 0 && blinkThread == NULL) {
+	} else if (strcmp(sOpt, "off") == 0 && blinkThread == NULL) {
 		chprintf(chp, "blinkThread not found, nothing to turn off\r\n");
-		return;
-	}
-
-
-	else if (strcmp(sOpt, "on") == 0){
+	} else if (strcmp(sOpt, "on") == 0) {
 		//set the GPIO as output
 		for(i = 0; i < sizeof(pinPorts)/sizeof(pinPorts[0]); i++) {
 			if((pinPorts[i].as_gpio) && (strcmp(pOpt, pinPorts[i].pinNrString) == 0)) {
 				blinkThread = chThdCreateI(blinkThreadArea, sizeof(blinkThreadArea),
-                          				NORMALPRIO, blinkFunction, (void*)i);
+																	 NORMALPRIO, blinkFunction, (void*)i);
 				chThdStartI(blinkThread);
 				chprintf(chp,"Ok\r\n");
 				break;
 			}
 		}
 	}
-
 }
 
 
@@ -392,36 +370,31 @@ static void cmd_uart(BaseSequentialStream *chp, int argc, char *argv[]) {
 #ifdef SHELL_OPTION_PARSING_DEBUG
 			chprintf(chp, "Direction %s detected\r\n", dOpt);
 #endif
-		}
-		else if(strcmp(argv[i], "-p") == 0) {
+		} else if(strcmp(argv[i], "-p") == 0) {
 			if(++i >= argc) continue;
 			pOpt = argv[i];
 #ifdef SHELL_OPTION_PARSING_DEBUG
 			chprintf(chp, "Port %s detected\r\n", pOpt);
 #endif
-		}
-		else if(strcmp(argv[i], "-v") == 0) {
+		} else if(strcmp(argv[i], "-v") == 0) {
 			if(++i >= argc) continue;
 			vOpt = argv[i];
 #ifdef SHELL_OPTION_PARSING_DEBUG
 			chprintf(chp, "Value %s detected\r\n", vOpt);
 #endif
-		}
-		else if(strcmp(argv[i], "-l") == 0) {
+		} else if(strcmp(argv[i], "-l") == 0) {
 			if(++i >= argc) continue;
 			lOpt = argv[i];
 #ifdef SHELL_OPTION_PARSING_DEBUG
 			chprintf(chp, "Length %s detected\r\n", lOpt);
 #endif
-		}
-		else if(strcmp(argv[i], "-t") == 0) {
+		} else if(strcmp(argv[i], "-t") == 0) {
 			if(++i >= argc) continue;
 			tOpt = argv[i];
 #ifdef SHELL_OPTION_PARSING_DEBUG
 			chprintf(chp, "Timeout %s detected\r\n", tOpt);
 #endif
-		}
-		else if(strcmp(argv[i], "-b") == 0) {
+		} else if(strcmp(argv[i], "-b") == 0) {
 			if(++i >= argc) continue;
 			bOpt = argv[i];
 #ifdef SHELL_OPTION_PARSING_DEBUG
@@ -642,8 +615,7 @@ static void cmd_pwm(BaseSequentialStream *chp, int argc, char *argv[]) {
 		if(strcmp(argv[i], "-d") == 0) {
 			if(++i >= argc) continue;
 			dOpt = argv[i];
-		}
-		else if(strcmp(argv[i], "-f") == 0) {
+		} else if(strcmp(argv[i], "-f") == 0) {
 			if(++i >= argc) continue;
 			fOpt = argv[i];
 		}
@@ -840,25 +812,25 @@ static void cmd_send_pulses(BaseSequentialStream *chp, int argc, char *argv[]) {
 				// Assuming that the time for executing one pulse < time between two pulses:
 				// then the (sleep) time can be estimated by the time difference of two consecutive pulses
 				t_n = t_pulse((j+1), a) - t_pulse(j, a);
-			}
-			// constant motion at max. velocity
-			else {
+			} else {
+			  // constant motion at max. velocity
+
 				// in case of a small number of pulses, small acceleration and large velocity
 				// the acceleration interval (till pulse number n_a) exceeds count/2
 				// in this case only ac- and deceleration takes place and no movement
 				// at constant velocity
 				t_n = 1 / v;
 			}
-		}
-		// for the second half of steps (same calculations as for first half of the steps,
-		// but in reversed order)
-		else {
+		} else {
+			// for the second half of steps (same calculations as for first half of the steps,
+			// but in reversed order)
+
 			// deceleration interval (acceleration reversed)
 			if (pulse_j > (atoi(count) - n_a)) {
 				t_n = t_pulse((atoi(count)-j), a) - t_pulse((atoi(count)-(j+1)), a);
-			}
-			// constant motion at max. velocity
-			else {
+			} else {
+				// constant motion at max. velocity
+
 				t_n = 1 / v;
 			}
 		}
@@ -873,9 +845,9 @@ static void cmd_send_pulses(BaseSequentialStream *chp, int argc, char *argv[]) {
 			palClearPad(pinPorts[pinPulses].gpio, pinPorts[pinPulses].pin);
 			// sleep for the other half of the ramp
 			chThdSleepMilliseconds(t_sleep);
-		}
-		// else use [us] as sleep timer
-		else {
+		} else {
+			// use [us] as sleep timer
+
 			t_sleep = t_n_2 * 1000000; // sleep is half of the timer interval [us]
 			// enable pin immediately
 			palSetPad(pinPorts[pinPulses].gpio, pinPorts[pinPulses].pin);
@@ -937,8 +909,7 @@ static void cmd_motor_rotary(BaseSequentialStream *chp, int argc, char *argv[]) 
 			// pulses need to be a positive int
 			pulses = abs(pulses);
 			mode = MOTORMODE_ANGULAR;
-		}
-		else if(strcmp(argv[i], "home") == 0) {
+		} else if(strcmp(argv[i], "home") == 0) {
 			mode = MOTORMODE_HOME;
 			if(++i >= argc)
 				continue;
@@ -980,8 +951,7 @@ static void cmd_motor_rotary(BaseSequentialStream *chp, int argc, char *argv[]) 
 	if(mode == MOTORMODE_ANGULAR) {
 		palSetPad(pinPorts[pinMode1].gpio, pinPorts[pinMode1].pin);
 		palClearPad(pinPorts[pinMode2].gpio, pinPorts[pinMode2].pin);
-	}
-	else if(mode == MOTORMODE_HOME) {
+	} else if(mode == MOTORMODE_HOME) {
 		palSetPad(pinPorts[pinMode1].gpio, pinPorts[pinMode1].pin);
 		palSetPad(pinPorts[pinMode2].gpio, pinPorts[pinMode2].pin);
 	}
@@ -1091,8 +1061,7 @@ static void cmd_motor_linear(BaseSequentialStream *chp, int argc, char *argv[]) 
 			// Direction set by direction parameter
 			// pulses need to be a positive int
 			pulses = abs(pulses);
-		}
-		else if(strcmp(argv[i], "home") == 0) {
+		} else if(strcmp(argv[i], "home") == 0) {
 			mode = MOTORMODE_HOME;
 			if(++i >= argc)
 				continue;
@@ -1139,10 +1108,9 @@ static void cmd_motor_linear(BaseSequentialStream *chp, int argc, char *argv[]) 
 			pulses_ramped(pinPorts[pinPulses].gpio, pinPorts[pinPulses].pin, pulses, false, 5, 10);
 			if(direction == MOTIONDIR_CLOSER_TO_MOTOR) {
 				direction_literal = "towards motor";
-				}
-			else if(direction == MOTIONDIR_FARTHER_FROM_MOTOR) {
+			} else if(direction == MOTIONDIR_FARTHER_FROM_MOTOR) {
 				direction_literal = "towards homing position";
-				}
+			}
 			chprintf(chp, "Number of pulses sent: %d\r\nDirection: %s\r\n", pulses, direction_literal);
 			if(direction == MOTIONDIR_FARTHER_FROM_MOTOR)
 				palClearPad(pinPorts[pinDirection].gpio, pinPorts[pinDirection].pin);
