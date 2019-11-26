@@ -91,15 +91,15 @@ struct pinPort pinPorts[] = {
 
 int pinIndexForMaplePin(const char * maplePin, bool onlyIfGpio, bool onlyIfAdc, bool assertIfNone) {
 	unsigned i;
-	for(i = 0; i < sizeof(pinPorts)/sizeof(pinPorts[0]); i++) {
-		if(onlyIfGpio && !pinPorts[i].as_gpio)
+	for (i = 0; i < sizeof(pinPorts)/sizeof(pinPorts[0]); i++) {
+		if (onlyIfGpio && !pinPorts[i].as_gpio)
 			continue;
-		if(onlyIfAdc && !pinPorts[i].as_adc)
+		if (onlyIfAdc && !pinPorts[i].as_adc)
 			continue;
-		if(0 == strcmp(pinPorts[i].pinNrString, maplePin))
+		if (0 == strcmp(pinPorts[i].pinNrString, maplePin))
 			return i;
 	}
-	while(assertIfNone) { /* endless loop */ };
+	while (assertIfNone) { /* endless loop */ };
 	return -1;
 }
 
@@ -200,21 +200,21 @@ static void cmd_gpio(BaseSequentialStream *chp, int argc, char *argv[]) {
 
 	obmqSendMessage(MSG_CMD_GPIO);
 
-	for(i = 0; i < argc; i++) {
-		if(strcmp(argv[i], "-d") == 0) {
-			if(++i >= argc) continue;
+	for (i = 0; i < argc; i++) {
+		if (strcmp(argv[i], "-d") == 0) {
+			if (++i >= argc) continue;
 #ifdef SHELL_OPTION_PARSING_DEBUG
 			chprintf(chp, "detected -d with val: %s\r\n", argv[i]);
 #endif
 			dOpt = argv[i];
-		} else if(strcmp(argv[i], "-p") == 0) {
-			if(++i >= argc) continue;
+		} else if (strcmp(argv[i], "-p") == 0) {
+			if (++i >= argc) continue;
 #ifdef SHELL_OPTION_PARSING_DEBUG
 			chprintf(chp, "detected -p with val: %s\r\n", argv[i]);
 #endif
 			pOpt = argv[i];
-		} else if(strcmp(argv[i], "-v") == 0) {
-			if(++i >= argc) continue;
+		} else if (strcmp(argv[i], "-v") == 0) {
+			if (++i >= argc) continue;
 #ifdef SHELL_OPTION_PARSING_DEBUG
 			chprintf(chp, "detected -v with val: %s\r\n", argv[i]);
 #endif
@@ -222,7 +222,7 @@ static void cmd_gpio(BaseSequentialStream *chp, int argc, char *argv[]) {
 		}
 	}
 
-	if(!dOpt
+	if (!dOpt
 			|| !pOpt
 			|| ((strcmp(dOpt, "in") == 0) && vOpt)
 			|| ((strcmp(dOpt, "out") == 0) && !vOpt)
@@ -232,8 +232,8 @@ static void cmd_gpio(BaseSequentialStream *chp, int argc, char *argv[]) {
 				"\t\tin | out\r\n"
 				"\twith pin:\r\n"
 				"\t\t");
-		for(i = 0; i < sizeof(pinPorts)/sizeof(pinPorts[0]); i++)
-			if(pinPorts[i].as_gpio)
+		for (i = 0; i < sizeof(pinPorts)/sizeof(pinPorts[0]); i++)
+			if (pinPorts[i].as_gpio)
 				chprintf(chp, "%s | ", pinPorts[i].pinNrString);
 		chprintf(chp, "\r\n"
 				"\twith val: (only if direction out)\r\n"
@@ -241,18 +241,18 @@ static void cmd_gpio(BaseSequentialStream *chp, int argc, char *argv[]) {
 		return;
 	}
 
-	for(i = 0; i < sizeof(pinPorts)/sizeof(pinPorts[0]); i++) {
-		if((pinPorts[i].as_gpio) && (strcmp(pOpt, pinPorts[i].pinNrString) == 0)) {
-			if(strcmp(dOpt, "out") == 0) {
+	for (i = 0; i < sizeof(pinPorts)/sizeof(pinPorts[0]); i++) {
+		if ((pinPorts[i].as_gpio) && (strcmp(pOpt, pinPorts[i].pinNrString) == 0)) {
+			if (strcmp(dOpt, "out") == 0) {
 				palSetPadMode(pinPorts[i].gpio, pinPorts[i].pin, PAL_MODE_OUTPUT_PUSHPULL);
-				if(strcmp(vOpt, "1") == 0) {
+				if (strcmp(vOpt, "1") == 0) {
 					palSetPad(pinPorts[i].gpio, pinPorts[i].pin);
 #ifdef SHELL_OPTION_PARSING_DEBUG
 					chprintf(chp, "Set of Pin %s\r\n", pinPorts[i].pinNrString);
 #else
 					chprintf(chp, "Ok\r\n");
 #endif
-				} else if(strcmp(vOpt, "0") == 0) {
+				} else if (strcmp(vOpt, "0") == 0) {
 					palClearPad(pinPorts[i].gpio, pinPorts[i].pin);
 #ifdef SHELL_OPTION_PARSING_DEBUG
 					chprintf(chp, "Clear of Pin %s\r\n", pinPorts[i].pinNrString);
@@ -260,7 +260,7 @@ static void cmd_gpio(BaseSequentialStream *chp, int argc, char *argv[]) {
 					chprintf(chp, "Ok\r\n");
 #endif
 				}
-			} else if(strcmp(dOpt, "in") == 0) {
+			} else if (strcmp(dOpt, "in") == 0) {
 				palSetPadMode(pinPorts[i].gpio, pinPorts[i].pin, PAL_MODE_INPUT);
 #ifdef SHELL_OPTION_PARSING_DEBUG
 				chprintf(chp, "Read of Pin %s:%d\r\n",
@@ -306,34 +306,34 @@ static void cmd_blink(BaseSequentialStream *chp, int argc, char *argv[]) {
 	char *sOpt = NULL;
 
 	// parse arguments
-	for(i = 0; i < argc; i++) {
-		if(strcmp(argv[i], "-s") == 0) {
-			if(++i >= argc)
+	for (i = 0; i < argc; i++) {
+		if (strcmp(argv[i], "-s") == 0) {
+			if (++i >= argc)
 				continue;
 			sOpt = argv[i];
-		} else if(strcmp(argv[i], "-p") == 0) {
-			if(++i >= argc)
+		} else if (strcmp(argv[i], "-p") == 0) {
+			if (++i >= argc)
 				continue;
 			pOpt = argv[i];
 		}
 	}
 
-	if(!sOpt || ((0 == strcmp(sOpt, "off")) && pOpt) || ((0 == strcmp(sOpt, "on")) && !pOpt))
+	if (!sOpt || ((0 == strcmp(sOpt, "off")) && pOpt) || ((0 == strcmp(sOpt, "on")) && !pOpt))
 		goto exit_with_usage;
 
 	if (0 == strcmp(sOpt, "on")) {
 		if (blinkThread) {
 			chprintf(chp, "blinkThread already running, please stop that instance first!\r\n");
 		} else {
-			for(pin = 0; pin < sizeof(pinPorts)/sizeof(pinPorts[0]); pin++) {
-				if((pinPorts[pin].as_gpio) && (strcmp(pOpt, pinPorts[pin].pinNrString) == 0)) {
+			for (pin = 0; pin < sizeof(pinPorts)/sizeof(pinPorts[0]); pin++) {
+				if ((pinPorts[pin].as_gpio) && (strcmp(pOpt, pinPorts[pin].pinNrString) == 0)) {
 					blinkThread = chThdCreateI(blinkThreadArea, sizeof(blinkThreadArea), NORMALPRIO, blinkFunction, (void*)pin);
 					chThdStartI(blinkThread);
 					chprintf(chp,"Ok\r\n");
 					break;
 				}
 			}
-			if(!blinkThread) {
+			if (!blinkThread) {
 				chprintf(chp, "failed to find corresponding pin '%s'!\r\n", pOpt);
 			}
 		}
@@ -362,8 +362,8 @@ exit_with_usage:
 								"\twith pin (only if state on):\r\n"
 								"\t\t");
 								// all pins available can be blinked
-	for(pin = 0; pin < sizeof(pinPorts)/sizeof(pinPorts[0]); pin++)
-		if(pinPorts[pin].as_gpio)
+	for (pin = 0; pin < sizeof(pinPorts)/sizeof(pinPorts[0]); pin++)
+		if (pinPorts[pin].as_gpio)
 			chprintf(chp, "%s | ", pinPorts[pin].pinNrString);
 
 	chprintf(chp, "\r\n");
@@ -378,39 +378,39 @@ static void cmd_uart(BaseSequentialStream *chp, int argc, char *argv[]) {
 
 	obmqSendMessage(MSG_CMD_UART);
 
-	for(i = 0; i < argc; i++) {
-		if(strcmp(argv[i], "-d") == 0) {
-			if(++i >= argc) continue;
+	for (i = 0; i < argc; i++) {
+		if (strcmp(argv[i], "-d") == 0) {
+			if (++i >= argc) continue;
 			dOpt = argv[i];
 #ifdef SHELL_OPTION_PARSING_DEBUG
 			chprintf(chp, "Direction %s detected\r\n", dOpt);
 #endif
-		} else if(strcmp(argv[i], "-p") == 0) {
-			if(++i >= argc) continue;
+		} else if (strcmp(argv[i], "-p") == 0) {
+			if (++i >= argc) continue;
 			pOpt = argv[i];
 #ifdef SHELL_OPTION_PARSING_DEBUG
 			chprintf(chp, "Port %s detected\r\n", pOpt);
 #endif
-		} else if(strcmp(argv[i], "-v") == 0) {
-			if(++i >= argc) continue;
+		} else if (strcmp(argv[i], "-v") == 0) {
+			if (++i >= argc) continue;
 			vOpt = argv[i];
 #ifdef SHELL_OPTION_PARSING_DEBUG
 			chprintf(chp, "Value %s detected\r\n", vOpt);
 #endif
-		} else if(strcmp(argv[i], "-l") == 0) {
-			if(++i >= argc) continue;
+		} else if (strcmp(argv[i], "-l") == 0) {
+			if (++i >= argc) continue;
 			lOpt = argv[i];
 #ifdef SHELL_OPTION_PARSING_DEBUG
 			chprintf(chp, "Length %s detected\r\n", lOpt);
 #endif
-		} else if(strcmp(argv[i], "-t") == 0) {
-			if(++i >= argc) continue;
+		} else if (strcmp(argv[i], "-t") == 0) {
+			if (++i >= argc) continue;
 			tOpt = argv[i];
 #ifdef SHELL_OPTION_PARSING_DEBUG
 			chprintf(chp, "Timeout %s detected\r\n", tOpt);
 #endif
-		} else if(strcmp(argv[i], "-b") == 0) {
-			if(++i >= argc) continue;
+		} else if (strcmp(argv[i], "-b") == 0) {
+			if (++i >= argc) continue;
 			bOpt = argv[i];
 #ifdef SHELL_OPTION_PARSING_DEBUG
 			chprintf(chp, "Baudrate %s detected\r\n", bOpt);
@@ -418,7 +418,7 @@ static void cmd_uart(BaseSequentialStream *chp, int argc, char *argv[]) {
 		}
 	}
 
-	if((!dOpt)
+	if ((!dOpt)
 			|| (!pOpt)
 			|| !(((strcmp(dOpt, "out") == 0) || (strcmp(dOpt, "in") == 0)))
 			|| ((strcmp(dOpt, "in") == 0) && vOpt)
@@ -465,30 +465,30 @@ static void cmd_uart(BaseSequentialStream *chp, int argc, char *argv[]) {
 	}
 
 	SerialConfig baudrateConfig;
-	if(bOpt)
+	if (bOpt)
 		baudrateConfig.speed = atoi(bOpt);
 	else
 		baudrateConfig.speed = 115200;
 
-	for(i = 0; i < sizeof(uartPorts)/sizeof(uartPorts[0]); i++) {
-		if(strcmp(pOpt, uartPorts[i].uartPortString) == 0) {
+	for (i = 0; i < sizeof(uartPorts)/sizeof(uartPorts[0]); i++) {
+		if (strcmp(pOpt, uartPorts[i].uartPortString) == 0) {
 			palSetPadMode(uartPorts[i].txGpio, uartPorts[i].txPin, PAL_MODE_STM32_ALTERNATE_PUSHPULL);
 			palSetPadMode(uartPorts[i].rxGpio, uartPorts[i].rxPin, PAL_MODE_INPUT);
 			sdStart(uartPorts[i].sdp, &baudrateConfig);
-			if(strcmp(dOpt, "in") == 0) {
+			if (strcmp(dOpt, "in") == 0) {
 				unsigned char rawString[MAX_RAW_STRING_LENGTH], encodedString[MAX_BASE64_STRING_LENGTH];
 				int timeout = atoi(tOpt);
 				int length = atoi(lOpt);
-				if(length > MAX_RAW_STRING_LENGTH)
+				if (length > MAX_RAW_STRING_LENGTH)
 					chprintf(chp, "Length %d not supported. Maximum Length is %d.", length, MAX_RAW_STRING_LENGTH);
-				if(sdReadTimeout(uartPorts[i].sdp, rawString, length, timeout)) {
+				if (sdReadTimeout(uartPorts[i].sdp, rawString, length, timeout)) {
 					size_t encodedLength;
 					base64_encode(rawString, length, encodedString, &encodedLength);
 					chprintf(chp, "%.*s\r\n", encodedLength, encodedString);
 				} else {
 					chprintf(chp, "Timeout\r\n");
 				}
-			} else if(strcmp(dOpt, "out") == 0) {
+			} else if (strcmp(dOpt, "out") == 0) {
 				size_t decodedLength;
 				unsigned char decodedString[MAX_RAW_STRING_LENGTH];
 				base64_decode((unsigned char *)vOpt, strlen(vOpt), decodedString, &decodedLength);
@@ -533,7 +533,7 @@ static void icuwidthcb(ICUDriver *icup) {
 	float prevWidthMean = widthMean, prevWidthModVariance = widthModVariance;
 	icucnt_t currentWidth = icuGetWidthX(icup);
 
-	if(widthSampleCounter == 0) {
+	if (widthSampleCounter == 0) {
 		widthSampleCounter++;
 		widthMean = (float)currentWidth;
 	} else {
@@ -547,7 +547,7 @@ static void icuperiodcb(ICUDriver *icup) {
 	float prevPeriodMean = periodMean, prevPeriodModVariance = periodModVariance;
 	icucnt_t currentPeriod = icuGetPeriodX(icup);
 
-	if(periodSampleCounter == 0) {
+	if (periodSampleCounter == 0) {
 		periodSampleCounter++;
 		periodMean = (float)currentPeriod;
 	} else {
@@ -565,7 +565,7 @@ static void cmd_pwmcapture(BaseSequentialStream *chp, int argc, char *argv[]) {
 	obmqSendMessage(MSG_CMD_PWMCAPTURE);
 
 	// PWM is using P27 GPIOA8
-	if(0 != argc) {
+	if (0 != argc) {
 		chprintf(chp, "Usage: no parameters required.\r\n"
 				"pwmcapture will sample a PWM signal on P27 (GPIO A8)\r\n");
 		return;
@@ -626,12 +626,12 @@ static void cmd_pwm(BaseSequentialStream *chp, int argc, char *argv[]) {
 	obmqSendMessage(MSG_CMD_PWM);
 
 	// Parsing
-	for(i = 0; i < argc; i++) {
-		if(strcmp(argv[i], "-d") == 0) {
-			if(++i >= argc) continue;
+	for (i = 0; i < argc; i++) {
+		if (strcmp(argv[i], "-d") == 0) {
+			if (++i >= argc) continue;
 			dOpt = argv[i];
-		} else if(strcmp(argv[i], "-f") == 0) {
-			if(++i >= argc) continue;
+		} else if (strcmp(argv[i], "-f") == 0) {
+			if (++i >= argc) continue;
 			fOpt = argv[i];
 		}
 	}
@@ -674,14 +674,14 @@ exit_with_usage:
 
 static void pulses_equidistant(GPIO_TypeDef *gpio, uint8_t pin, unsigned count, bool startLow, unsigned pulseLen_ms) {
 	unsigned i;
-	for(i = 0; i < count; ++i) {
-		if(startLow) {
+	for (i = 0; i < count; ++i) {
+		if (startLow) {
 			palSetPad(gpio, pin);
 			chThdSleepMilliseconds(pulseLen_ms);
 		}
 		palClearPad(gpio, pin);
 		chThdSleepMilliseconds(pulseLen_ms);
-		if(!startLow) {
+		if (!startLow) {
 			palSetPad(gpio, pin);
 			chThdSleepMilliseconds(pulseLen_ms);
 		}
@@ -741,23 +741,23 @@ static void cmd_send_pulses(BaseSequentialStream *chp, int argc, char *argv[]) {
 	float t_n_2; // [s] half of t_n
 	float t_sleep; // [ms] or [us] time t_n converted according to the used sleep function
 
-	for(i = 0; i < argc; i++) {
-		if(strcmp(argv[i], "-p") == 0) {
-			if(++i >= argc) continue;
+	for (i = 0; i < argc; i++) {
+		if (strcmp(argv[i], "-p") == 0) {
+			if (++i >= argc) continue;
 			pin = argv[i];
 			}
 		pinPulses = pinIndexForMaplePin(pin, true, false, true);
-		if(strcmp(argv[i], "-c") == 0) {
-			if(++i >= argc) continue;
+		if (strcmp(argv[i], "-c") == 0) {
+			if (++i >= argc) continue;
 			count = argv[i];
 		}
-		if(strcmp(argv[i], "-v") == 0) {
-			if(++i >= argc) continue;
+		if (strcmp(argv[i], "-v") == 0) {
+			if (++i >= argc) continue;
 			velocity = argv[i];
 			v = atof(velocity);
 		}
-		if(strcmp(argv[i], "-a") == 0) {
-			if(++i >= argc) continue;
+		if (strcmp(argv[i], "-a") == 0) {
+			if (++i >= argc) continue;
 			acceleration = argv[i];
 			a = atof(acceleration);
 		}
@@ -815,7 +815,7 @@ static void cmd_send_pulses(BaseSequentialStream *chp, int argc, char *argv[]) {
 	//			 When due to this the stepper motor can not be accelerated any further, try
 	//			 performing the loop calculations beforehand. So that during the loop only sleep times
 	//			 need to be accessed from a list.
-	for(j = 0; j < atoi(count); j++) {
+	for (j = 0; j < atoi(count); j++) {
 		pulse_j = j+1;	// there is no pulse 0 (since 0 initial distance means 0 pulses)
 		// In the following the time between the current enable and the following one is determined
 		// For the first half of steps
@@ -914,9 +914,9 @@ static void cmd_motor_rotary(BaseSequentialStream *chp, int argc, char *argv[]) 
 	int i;
 
 	// Parsing
-	for(i = 0; i < argc; i++) {
-		if(strcmp(argv[i], "rotate") == 0) {
-			if(++i >= argc)
+	for (i = 0; i < argc; i++) {
+		if (strcmp(argv[i], "rotate") == 0) {
+			if (++i >= argc)
 				continue;
 			pulses = atoi(argv[i]);
 			direction = (pulses < 0) ? MOTIONDIR_CCW : MOTIONDIR_CW;
@@ -924,14 +924,14 @@ static void cmd_motor_rotary(BaseSequentialStream *chp, int argc, char *argv[]) 
 			// pulses need to be a positive int
 			pulses = abs(pulses);
 			mode = MOTORMODE_ANGULAR;
-		} else if(strcmp(argv[i], "home") == 0) {
+		} else if (strcmp(argv[i], "home") == 0) {
 			mode = MOTORMODE_HOME;
-			if(++i >= argc)
+			if (++i >= argc)
 				continue;
 		}
 	}
 
-	if(!(mode == MOTORMODE_ANGULAR || mode == MOTORMODE_HOME))
+	if (!(mode == MOTORMODE_ANGULAR || mode == MOTORMODE_HOME))
 		goto exit_with_usage;
 
 	// SET UP OF PINS
@@ -944,9 +944,9 @@ static void cmd_motor_rotary(BaseSequentialStream *chp, int argc, char *argv[]) 
 	pinDirection = pinIndexForMaplePin(maplePinDirection, true, false, true);
 	palSetPadMode(pinPorts[pinDirection].gpio, pinPorts[pinDirection].pin, PAL_MODE_OUTPUT_PUSHPULL);
 	// set direction pin
-	if(direction == MOTIONDIR_CCW)
+	if (direction == MOTIONDIR_CCW)
 		palSetPad(pinPorts[pinDirection].gpio, pinPorts[pinDirection].pin);
-	else if(direction == MOTIONDIR_CW)
+	else if (direction == MOTIONDIR_CW)
 		palClearPad(pinPorts[pinDirection].gpio, pinPorts[pinDirection].pin);
 
 	// pin for enable
@@ -963,10 +963,10 @@ static void cmd_motor_rotary(BaseSequentialStream *chp, int argc, char *argv[]) 
 	palSetPadMode(pinPorts[pinMode2].gpio, pinPorts[pinMode2].pin, PAL_MODE_OUTPUT_PUSHPULL);
 
 	// set mode pins
-	if(mode == MOTORMODE_ANGULAR) {
+	if (mode == MOTORMODE_ANGULAR) {
 		palSetPad(pinPorts[pinMode1].gpio, pinPorts[pinMode1].pin);
 		palClearPad(pinPorts[pinMode2].gpio, pinPorts[pinMode2].pin);
-	} else if(mode == MOTORMODE_HOME) {
+	} else if (mode == MOTORMODE_HOME) {
 		palSetPad(pinPorts[pinMode1].gpio, pinPorts[pinMode1].pin);
 		palSetPad(pinPorts[pinMode2].gpio, pinPorts[pinMode2].pin);
 	}
@@ -983,9 +983,9 @@ static void cmd_motor_rotary(BaseSequentialStream *chp, int argc, char *argv[]) 
 					pulses);
 			chThdSleepMilliseconds(200);
 			pulses_equidistant(pinPorts[pinPulses].gpio, pinPorts[pinPulses].pin, pulses, false, 2);
-			if(direction == MOTIONDIR_CW)
+			if (direction == MOTIONDIR_CW)
 				direction_literal = "clockwise (CW)";
-			else if(direction == MOTIONDIR_CCW)
+			else if (direction == MOTIONDIR_CCW)
 				direction_literal = "counterclockwise (CCW)";
 			// Each sent pulse will result in 1.8 degrees rotation
 			rotational_angle = pulses * 1.8;
@@ -1028,14 +1028,14 @@ static void pulses_ramped(GPIO_TypeDef *gpio, uint8_t pin, unsigned count, bool 
 	uint8_t delay = minPulseLen_ms + rampSteps;
 	unsigned i;
 
-	for(i = 0; i < count; i++) {
-		if(startLow) {
+	for (i = 0; i < count; i++) {
+		if (startLow) {
 			palSetPad(gpio, pin);
 			chThdSleepMilliseconds(delay);
 		}
 		palClearPad(gpio, pin);
 		chThdSleepMilliseconds(delay);
-		if(!startLow) {
+		if (!startLow) {
 			palSetPad(gpio, pin);
 			chThdSleepMilliseconds(delay);
 		}
@@ -1065,9 +1065,9 @@ static void cmd_motor_linear(BaseSequentialStream *chp, int argc, char *argv[]) 
 	int i;
 
 	// Parsing
-	for(i = 0; i < argc; i++) {
-		if(strcmp(argv[i], "move") == 0) {
-			if(++i >= argc)
+	for (i = 0; i < argc; i++) {
+		if (strcmp(argv[i], "move") == 0) {
+			if (++i >= argc)
 				continue;
 			pulses = atoi(argv[i]);
 			mode = MOTORMODE_LINEAR;
@@ -1076,19 +1076,19 @@ static void cmd_motor_linear(BaseSequentialStream *chp, int argc, char *argv[]) 
 			// Direction set by direction parameter
 			// pulses need to be a positive int
 			pulses = abs(pulses);
-		} else if(strcmp(argv[i], "home") == 0) {
+		} else if (strcmp(argv[i], "home") == 0) {
 			mode = MOTORMODE_HOME;
-			if(++i >= argc)
+			if (++i >= argc)
 				continue;
 		}
 	}
 
-	if(!(mode == MOTORMODE_LINEAR || mode == MOTORMODE_HOME))
+	if (!(mode == MOTORMODE_LINEAR || mode == MOTORMODE_HOME))
 		goto exit_with_usage;
 
 	/* Pin definition for the pulse and direction outputs */
 
-	if(mode == MOTORMODE_LINEAR) {
+	if (mode == MOTORMODE_LINEAR) {
 		// Configure the pins just when the mode "move" is used and pulses will be send
 		pinPulses = pinIndexForMaplePin(maplePinPulses, true, false, true);
 		palSetPadMode(pinPorts[pinPulses].gpio, pinPorts[pinPulses].pin, PAL_MODE_OUTPUT_PUSHPULL);
@@ -1097,9 +1097,9 @@ static void cmd_motor_linear(BaseSequentialStream *chp, int argc, char *argv[]) 
 
 		pinDirection = pinIndexForMaplePin(maplePinDirection, true, false, true);
 		palSetPadMode(pinPorts[pinDirection].gpio, pinPorts[pinDirection].pin, PAL_MODE_OUTPUT_PUSHPULL);
-		if(direction == MOTIONDIR_CLOSER_TO_MOTOR)
+		if (direction == MOTIONDIR_CLOSER_TO_MOTOR)
 			palSetPad(pinPorts[pinDirection].gpio, pinPorts[pinDirection].pin);
-		else if(direction == MOTIONDIR_FARTHER_FROM_MOTOR)
+		else if (direction == MOTIONDIR_FARTHER_FROM_MOTOR)
 			palClearPad(pinPorts[pinDirection].gpio, pinPorts[pinDirection].pin);
 		chThdSleepMilliseconds(20); // let the uc settle shortly before motor is enabled
 	}
@@ -1121,13 +1121,13 @@ static void cmd_motor_linear(BaseSequentialStream *chp, int argc, char *argv[]) 
 					pinPorts[pinPulses].pinNrString,
 					pulses);
 			pulses_ramped(pinPorts[pinPulses].gpio, pinPorts[pinPulses].pin, pulses, false, 5, 10);
-			if(direction == MOTIONDIR_CLOSER_TO_MOTOR) {
+			if (direction == MOTIONDIR_CLOSER_TO_MOTOR) {
 				direction_literal = "towards motor";
-			} else if(direction == MOTIONDIR_FARTHER_FROM_MOTOR) {
+			} else if (direction == MOTIONDIR_FARTHER_FROM_MOTOR) {
 				direction_literal = "towards homing position";
 			}
 			chprintf(chp, "Number of pulses sent: %d\r\nDirection: %s\r\n", pulses, direction_literal);
-			if(direction == MOTIONDIR_FARTHER_FROM_MOTOR)
+			if (direction == MOTIONDIR_FARTHER_FROM_MOTOR)
 				palClearPad(pinPorts[pinDirection].gpio, pinPorts[pinDirection].pin);
 			palClearPad(pinPorts[pinEnable].gpio, pinPorts[pinEnable].pin);
 			break;
@@ -1300,7 +1300,7 @@ static float readSensorTimeout(BaseSequentialStream *chp, uint8_t sensorID, uint
 		i2cMasterTransmitTimeout(sensorList[sensorID].port, sensorList[sensorID].addr, &sensorList[sensorID].cmd, 1, NULL, 0, 100);
 
 		// Wait for response
-		while(ST2MS(chVTTimeElapsedSinceX(startt)) < timeout) {
+		while (ST2MS(chVTTimeElapsedSinceX(startt)) < timeout) {
 			msg_t m = i2cMasterReceiveTimeout(sensorList[sensorID].port, sensorList[sensorID].addr, i2c_rx_buf, sizeof(i2c_rx_buf), 100);
 			if (i2cGetErrors(sensorList[sensorID].port) != I2C_ACK_FAILURE && m == MSG_OK) {
 				data_raw = (((int16_t)i2c_rx_buf[0]) << 8) + i2c_rx_buf[1];				// Network Byte Order -> Host Byte Order
@@ -1336,27 +1336,27 @@ static void cmd_sensor(BaseSequentialStream *chp, int argc, char *argv[]) {
 		goto exit_with_usage;
 
 	// Parse args
-	for(i = 0; i < argc; i++) {
-		if(strcmp(argv[i], "temp") == 0) {
+	for (i = 0; i < argc; i++) {
+		if (strcmp(argv[i], "temp") == 0) {
 			if (rTemp || rHumid)
 				goto exit_with_usage;
 			rTemp = true;
-		} else if(strcmp(argv[i], "humid") == 0) {
+		} else if (strcmp(argv[i], "humid") == 0) {
 			if (rTemp || rHumid)
 				goto exit_with_usage;
 			rHumid = true;
-		} else if(strcmp(argv[i], "-t") == 0) {
-			if(++i >= argc) continue;
+		} else if (strcmp(argv[i], "-t") == 0) {
+			if (++i >= argc) continue;
 			tOpt = argv[i];
-		} else if(strcmp(argv[i], "scan") == 0) {
+		} else if (strcmp(argv[i], "scan") == 0) {
 			if (argc > 1)
 				goto exit_with_usage;
 			rScan = true;
-		} else if(strcmp(argv[i], "show") == 0) {
+		} else if (strcmp(argv[i], "show") == 0) {
 			if (argc > 1)
 				goto exit_with_usage;
 			rShow = true;
-		} else if(strcmp(argv[i], "-h") == 0) {
+		} else if (strcmp(argv[i], "-h") == 0) {
 			goto exit_with_usage;
 		} else {
 			chprintf(chp, "Unrecognized parameter %s\r\n", argv[i]);
@@ -1400,7 +1400,7 @@ static void cmd_sensor(BaseSequentialStream *chp, int argc, char *argv[]) {
 
 	if (rTemp) {
 		// Acquire and print temperature(s)
-		for(i = (tOpt ? atoi(tOpt) : 0); i <= (tOpt ? atoi(tOpt) : MAX_NUM_SENSORS-1); i++) {
+		for (i = (tOpt ? atoi(tOpt) : 0); i <= (tOpt ? atoi(tOpt) : MAX_NUM_SENSORS-1); i++) {
 			if (sensorList[i].port == NULL)
 				break;
 			if (sensorList[i].type != TEMP) {
@@ -1414,7 +1414,7 @@ static void cmd_sensor(BaseSequentialStream *chp, int argc, char *argv[]) {
 		}
 	} else if (rHumid) {
 		// Acquire and print humidity(s)
-		for(i = (tOpt ? atoi(tOpt) : 0); i <= (tOpt ? atoi(tOpt) : MAX_NUM_SENSORS-1); i++) {
+		for (i = (tOpt ? atoi(tOpt) : 0); i <= (tOpt ? atoi(tOpt) : MAX_NUM_SENSORS-1); i++) {
 			if (sensorList[i].port == NULL)
 				break;
 			if (sensorList[i].type != HUMID) {
@@ -1498,7 +1498,7 @@ static void cmd_pollsensors(BaseSequentialStream *chp, int argc, char *argv[]) {
 		i2cStart(i2cdx, &i2ccfg);
 	}
 
-	while(true) {
+	while (true) {
 		wdtAdd(1);
 
 		startt = chVTGetSystemTime();
@@ -1525,7 +1525,7 @@ static void cmd_pollsensors(BaseSequentialStream *chp, int argc, char *argv[]) {
 
 		// Request data until we get an ACK
 		int32_t elapsedTime, tmp;
-		while((tmp = (int32_t)ST2MS(chVTTimeElapsedSinceX(startt))) < 1000/pollrate) {
+		while ((tmp = (int32_t)ST2MS(chVTTimeElapsedSinceX(startt))) < 1000/pollrate) {
 			elapsedTime = tmp;
 			bool allResp = true;
 			for (i = 0; i < MAX_NUM_SENSORS; i++) {
@@ -1630,7 +1630,7 @@ static void cmd_uniqueid(BaseSequentialStream *chp, int argc, char *argv[]) {
 
 	get_unique_device_id96(uid96);
 	chprintf(chp, "UID ");
-	for(i = 0; i < sizeof(uid96); ++i) {
+	for (i = 0; i < sizeof(uid96); ++i) {
 		chprintf(chp, "%02x", uid96[i]);
 	}
 	chprintf(chp, "\r\n");
@@ -1649,8 +1649,8 @@ static void cmd_getname(BaseSequentialStream *chp, int argc, char *argv[]) {
 	// auto-correct for nulls in utf16
 	chprintf(chp, "Name (len %d): ", USBDeviceDescriptorNameLength()/2);
 
-	for(int i = 0; i < MAX_DEVICENAME_LEN/2; ++i) {
-		if(0xff == name[i*2])
+	for (int i = 0; i < MAX_DEVICENAME_LEN/2; ++i) {
+		if (0xff == name[i*2])
 			break;
 		chprintf(chp, "%c", name[i*2]);
 	}
@@ -1663,12 +1663,12 @@ static void cmd_getname(BaseSequentialStream *chp, int argc, char *argv[]) {
 
 static char copybuffer[MAX_DEVICENAME_LEN] __attribute__((aligned(4)));
 static void cmd_setname(BaseSequentialStream *chp, int argc, char *argv[]) {
-	if(argc != 2) {
+	if (argc != 2) {
 		chprintf(chp, "Missing or excessive arguments!\r\n");
     goto exit_with_usage;
 	}
 
-	if(0 != strcmp(argv[0], "FORCE")) {
+	if (0 != strcmp(argv[0], "FORCE")) {
 		chprintf(chp, "If you really mean it, the second param must be 'FORCE'!\r\n");
     goto exit_with_usage;
 	}
@@ -1676,18 +1676,18 @@ static void cmd_setname(BaseSequentialStream *chp, int argc, char *argv[]) {
 	const char * name = argv[1];
 
   // make sure there is no name stored yet.
-	if(0 != USBDeviceDescriptorNameLength()) {
+	if (0 != USBDeviceDescriptorNameLength()) {
     chprintf(chp, "A name already has been stored on this device!\r\n");
 		goto exit_with_usage;
   }
 
   // make sure new name fits (UTF16!)
   int nameLen = strlen(name);
-  if(MAX_DEVICENAME_LEN < nameLen * 2) {
+  if (MAX_DEVICENAME_LEN < nameLen * 2) {
     chprintf(chp, "Name is %d characters too long!\r\n", MAX_DEVICENAME_LEN - nameLen*2);
 		goto exit_with_usage;
   }
-  if(0 == nameLen) {
+  if (0 == nameLen) {
     chprintf(chp, "Name is empty!\r\n");
 		goto exit_with_usage;
   }
@@ -1695,8 +1695,8 @@ static void cmd_setname(BaseSequentialStream *chp, int argc, char *argv[]) {
   // prepare raw buffer in UTF16 format
 	chprintf(chp, "copybuffer resides at 0x%08x\r\n", copybuffer);
   memset(copybuffer, 0xff, sizeof(copybuffer));
-  for(int i = 0; i < nameLen; ++i) {
-    if(!isalnum(name[i]) && ('_' != name[i])) {
+  for (int i = 0; i < nameLen; ++i) {
+    if (!isalnum(name[i]) && ('_' != name[i])) {
       chprintf(chp, "Name contains invalid character %c (0x%02x).\r\n", name[i], (int)name[i]);
       goto exit_with_usage;
     }
@@ -1709,7 +1709,7 @@ static void cmd_setname(BaseSequentialStream *chp, int argc, char *argv[]) {
   int r = storeUSBDeviceDescriptorName(copybuffer);
 	wdtEnable(0);
 
-	if(r == 0) {
+	if (r == 0) {
 		chprintf(chp, "Name stored, will be used after reset.\r\n");
 	} else {
 		chprintf(chp, "Storing name in flash failed with error %d!\r\n", r);
@@ -1773,21 +1773,21 @@ static void cmd_adc(BaseSequentialStream *chp, int argc, char *argv[]) {
 
 	obmqSendMessage(MSG_CMD_ADC);
 
-	if(argc == 1)
+	if (argc == 1)
 		pOpt = argv[0];
 
-	if(NULL == pOpt) {
+	if (NULL == pOpt) {
 		chprintf(chp, "Usage: adc <pin>\r\n"
 				"\twith pin:\r\n\t\t");
-		for(i = 0; i < sizeof(pinPorts)/sizeof(pinPorts[0]); i++)
-			if(pinPorts[i].as_adc)
+		for (i = 0; i < sizeof(pinPorts)/sizeof(pinPorts[0]); i++)
+			if (pinPorts[i].as_adc)
 				chprintf(chp, "%s | ", pinPorts[i].pinNrString);
 		chprintf(chp, "\r\n");
 		return;
 	}
 
 	pin = pinIndexForMaplePin(pOpt, false, true, false);
-	if(pin < 0) {
+	if (pin < 0) {
 		chprintf(chp, "Bad ADC pin '%s'\r\n", pOpt);
 		return;
 	}
@@ -1811,7 +1811,7 @@ static void cmd_adc(BaseSequentialStream *chp, int argc, char *argv[]) {
 
 	wdtEnable(0);
 
-	if(adc_conversion_ok)
+	if (adc_conversion_ok)
 		chprintf(chp, "OK %u\r\n", samples[0]);
 	else
 		chprintf(chp, "FAIL conversion error\r\n");
@@ -1831,7 +1831,7 @@ static void cmd_reset(BaseSequentialStream *chp, int argc, char *argv[]) {
 
 	wdtEnable(1);
 
-	while(1)
+	while (1)
 		/* wait for WDT timeout */
 		;
 }
@@ -1891,10 +1891,10 @@ int main(void) {
 	chSysInit();
 
 	/* for safety reasons: all GPIOs as Input */
-	for(i = 0; i < sizeof(pinPorts)/sizeof(pinPorts[0]); i++) {
+	for (i = 0; i < sizeof(pinPorts)/sizeof(pinPorts[0]); i++) {
 		palSetPadMode(pinPorts[i].gpio, pinPorts[i].pin, PAL_MODE_INPUT);
 	}
-	for(i = 0; i < sizeof(uartPorts)/sizeof(uartPorts[0]); i++) {
+	for (i = 0; i < sizeof(uartPorts)/sizeof(uartPorts[0]); i++) {
 		palSetPadMode(uartPorts[i].rxGpio, uartPorts[i].rxPin, PAL_MODE_INPUT);
 		palSetPadMode(uartPorts[i].txGpio, uartPorts[i].txPin, PAL_MODE_INPUT);
 	}
