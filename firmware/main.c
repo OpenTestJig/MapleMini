@@ -301,6 +301,7 @@ static THD_FUNCTION(blinkFunction, arg) {
 static void cmd_blink(BaseSequentialStream *chp, int argc, char *argv[]) {
 	// start or stop a thread for the blinking lights
 	int i;
+	unsigned pin;
 	char *pOpt = NULL;
 	char *sOpt = NULL;
 
@@ -324,9 +325,9 @@ static void cmd_blink(BaseSequentialStream *chp, int argc, char *argv[]) {
 		if (blinkThread != NULL) {
 			chprintf(chp, "blinkThread already running, please stop (set the -s option to off) before enabling another blinker\r\n");
 		} else {
-			for(i = 0; i < sizeof(pinPorts)/sizeof(pinPorts[0]); i++) {
-				if((pinPorts[i].as_gpio) && (strcmp(pOpt, pinPorts[i].pinNrString) == 0)) {
-					blinkThread = chThdCreateI(blinkThreadArea, sizeof(blinkThreadArea), NORMALPRIO, blinkFunction, (void*)i);
+			for(pin = 0; pin < sizeof(pinPorts)/sizeof(pinPorts[0]); pin++) {
+				if((pinPorts[pin].as_gpio) && (strcmp(pOpt, pinPorts[pin].pinNrString) == 0)) {
+					blinkThread = chThdCreateI(blinkThreadArea, sizeof(blinkThreadArea), NORMALPRIO, blinkFunction, (void*)pin);
 					chThdStartI(blinkThread);
 					chprintf(chp,"Ok\r\n");
 				}
@@ -357,9 +358,9 @@ exit_with_usage:
 								"\twith pin (only if state on):\r\n"
 								"\t\t");
 								// all pins available can be blinked
-	for(i = 0; i < sizeof(pinPorts)/sizeof(pinPorts[0]); i++)
-		if(pinPorts[i].as_gpio)
-			chprintf(chp, "%s | ", pinPorts[i].pinNrString);
+	for(pin = 0; pin < sizeof(pinPorts)/sizeof(pinPorts[0]); pin++)
+		if(pinPorts[pin].as_gpio)
+			chprintf(chp, "%s | ", pinPorts[pin].pinNrString);
 
 	chprintf(chp, "\r\n");
 }
