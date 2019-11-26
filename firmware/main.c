@@ -202,19 +202,22 @@ static void cmd_gpio(BaseSequentialStream *chp, int argc, char *argv[]) {
 
 	for (i = 0; i < argc; i++) {
 		if (strcmp(argv[i], "-d") == 0) {
-			if (++i >= argc) continue;
+			if (++i >= argc)
+				continue;
 #ifdef SHELL_OPTION_PARSING_DEBUG
 			chprintf(chp, "detected -d with val: %s\r\n", argv[i]);
 #endif
 			dOpt = argv[i];
 		} else if (strcmp(argv[i], "-p") == 0) {
-			if (++i >= argc) continue;
+			if (++i >= argc)
+				continue;
 #ifdef SHELL_OPTION_PARSING_DEBUG
 			chprintf(chp, "detected -p with val: %s\r\n", argv[i]);
 #endif
 			pOpt = argv[i];
 		} else if (strcmp(argv[i], "-v") == 0) {
-			if (++i >= argc) continue;
+			if (++i >= argc)
+				continue;
 #ifdef SHELL_OPTION_PARSING_DEBUG
 			chprintf(chp, "detected -v with val: %s\r\n", argv[i]);
 #endif
@@ -380,37 +383,43 @@ static void cmd_uart(BaseSequentialStream *chp, int argc, char *argv[]) {
 
 	for (i = 0; i < argc; i++) {
 		if (strcmp(argv[i], "-d") == 0) {
-			if (++i >= argc) continue;
+			if (++i >= argc)
+				continue;
 			dOpt = argv[i];
 #ifdef SHELL_OPTION_PARSING_DEBUG
 			chprintf(chp, "Direction %s detected\r\n", dOpt);
 #endif
 		} else if (strcmp(argv[i], "-p") == 0) {
-			if (++i >= argc) continue;
+			if (++i >= argc)
+				continue;
 			pOpt = argv[i];
 #ifdef SHELL_OPTION_PARSING_DEBUG
 			chprintf(chp, "Port %s detected\r\n", pOpt);
 #endif
 		} else if (strcmp(argv[i], "-v") == 0) {
-			if (++i >= argc) continue;
+			if (++i >= argc)
+				continue;
 			vOpt = argv[i];
 #ifdef SHELL_OPTION_PARSING_DEBUG
 			chprintf(chp, "Value %s detected\r\n", vOpt);
 #endif
 		} else if (strcmp(argv[i], "-l") == 0) {
-			if (++i >= argc) continue;
+			if (++i >= argc)
+				continue;
 			lOpt = argv[i];
 #ifdef SHELL_OPTION_PARSING_DEBUG
 			chprintf(chp, "Length %s detected\r\n", lOpt);
 #endif
 		} else if (strcmp(argv[i], "-t") == 0) {
-			if (++i >= argc) continue;
+			if (++i >= argc)
+				continue;
 			tOpt = argv[i];
 #ifdef SHELL_OPTION_PARSING_DEBUG
 			chprintf(chp, "Timeout %s detected\r\n", tOpt);
 #endif
 		} else if (strcmp(argv[i], "-b") == 0) {
-			if (++i >= argc) continue;
+			if (++i >= argc)
+				continue;
 			bOpt = argv[i];
 #ifdef SHELL_OPTION_PARSING_DEBUG
 			chprintf(chp, "Baudrate %s detected\r\n", bOpt);
@@ -628,10 +637,12 @@ static void cmd_pwm(BaseSequentialStream *chp, int argc, char *argv[]) {
 	// Parsing
 	for (i = 0; i < argc; i++) {
 		if (strcmp(argv[i], "-d") == 0) {
-			if (++i >= argc) continue;
+			if (++i >= argc)
+				continue;
 			dOpt = argv[i];
 		} else if (strcmp(argv[i], "-f") == 0) {
-			if (++i >= argc) continue;
+			if (++i >= argc)
+				continue;
 			fOpt = argv[i];
 		}
 	}
@@ -743,21 +754,25 @@ static void cmd_send_pulses(BaseSequentialStream *chp, int argc, char *argv[]) {
 
 	for (i = 0; i < argc; i++) {
 		if (strcmp(argv[i], "-p") == 0) {
-			if (++i >= argc) continue;
+			if (++i >= argc)
+				continue;
 			pin = argv[i];
 			}
 		pinPulses = pinIndexForMaplePin(pin, true, false, true);
 		if (strcmp(argv[i], "-c") == 0) {
-			if (++i >= argc) continue;
+			if (++i >= argc)
+				continue;
 			count = argv[i];
 		}
 		if (strcmp(argv[i], "-v") == 0) {
-			if (++i >= argc) continue;
+			if (++i >= argc)
+				continue;
 			velocity = argv[i];
 			v = atof(velocity);
 		}
 		if (strcmp(argv[i], "-a") == 0) {
-			if (++i >= argc) continue;
+			if (++i >= argc)
+				continue;
 			acceleration = argv[i];
 			a = atof(acceleration);
 		}
@@ -1346,7 +1361,8 @@ static void cmd_sensor(BaseSequentialStream *chp, int argc, char *argv[]) {
 				goto exit_with_usage;
 			rHumid = true;
 		} else if (strcmp(argv[i], "-t") == 0) {
-			if (++i >= argc) continue;
+			if (++i >= argc)
+				continue;
 			tOpt = argv[i];
 		} else if (strcmp(argv[i], "scan") == 0) {
 			if (argc > 1)
