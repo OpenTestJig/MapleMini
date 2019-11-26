@@ -322,21 +322,25 @@ static void cmd_blink(BaseSequentialStream *chp, int argc, char *argv[]) {
 		goto exit_with_usage;
 
 	if (0 == strcmp(sOpt, "on")) {
-		if (blinkThread != NULL) {
-			chprintf(chp, "blinkThread already running, please stop (set the -s option to off) before enabling another blinker\r\n");
+		if (blinkThread) {
+			chprintf(chp, "blinkThread already running, please stop that instance first!\r\n");
 		} else {
 			for(pin = 0; pin < sizeof(pinPorts)/sizeof(pinPorts[0]); pin++) {
 				if((pinPorts[pin].as_gpio) && (strcmp(pOpt, pinPorts[pin].pinNrString) == 0)) {
 					blinkThread = chThdCreateI(blinkThreadArea, sizeof(blinkThreadArea), NORMALPRIO, blinkFunction, (void*)pin);
 					chThdStartI(blinkThread);
 					chprintf(chp,"Ok\r\n");
+					break;
 				}
+			}
+			if(!blinkThread) {
+				chprintf(chp, "failed to find corresponding pin '%s'!\r\n", pOpt);
 			}
 		}
 
 	} else if (0 == strcmp(sOpt, "off")) {
-		if (blinkThread == NULL) {
-			chprintf(chp, "no running blinkThread found, nothing to turn off\r\n");
+		if (!blinkThread) {
+			chprintf(chp, "no running blinkThread found, nothing to turn off!\r\n");
 		} else {
 			chThdTerminate(blinkThread);
 			chThdWait(blinkThread);
