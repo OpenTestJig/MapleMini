@@ -311,19 +311,19 @@ static void cmd_blink(BaseSequentialStream *chp, int argc, char *argv[]) {
 	//parse arguments
 	for(i = 0; i < argc; i++) {
 		if(strcmp(argv[i], "-s") == 0) {
-			if(++i >= argc) 
+			if(++i >= argc)
 				continue;
 			sOpt = argv[i];
 		}
 
 
 			else if(strcmp(argv[i], "-p") == 0) {
-				if(++i >= argc) 
+				if(++i >= argc)
 					continue;
 				pOpt = argv[i];
 			}
 	}
-	
+
 	//if s is off then pin can be empty
 	if(!sOpt || ((strcmp(sOpt, "off") == 0) && pOpt) || ((strcmp(sOpt, "on") == 0) && !pOpt)){
 		chprintf(chp, "Usage: blink -s [state] [-p <pin>] \r\n"
@@ -341,13 +341,13 @@ static void cmd_blink(BaseSequentialStream *chp, int argc, char *argv[]) {
 	}
 
 
-	
 
-	if (strcmp(sOpt, "on") == 0 && blinkThread != NULL){	
+
+	if (strcmp(sOpt, "on") == 0 && blinkThread != NULL){
 		chprintf(chp, "blinkThread already running, please stop this (set the -s option to off) before turning another blinker on\r\n");
 		return;
 	}
-	else if (strcmp(sOpt, "off") == 0 && blinkThread != NULL) { 
+	else if (strcmp(sOpt, "off") == 0 && blinkThread != NULL) {
 		chThdTerminate(blinkThread);
 
 		chThdWait(blinkThread);
@@ -359,7 +359,7 @@ static void cmd_blink(BaseSequentialStream *chp, int argc, char *argv[]) {
 		chprintf(chp, "blinkThread not found, nothing to turn off\r\n");
 		return;
 	}
-	
+
 
 	else if (strcmp(sOpt, "on") == 0){
 		//set the GPIO as output
