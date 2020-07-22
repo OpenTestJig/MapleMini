@@ -288,6 +288,7 @@ static void cmd_gpio(BaseSequentialStream *chp, int argc, char *argv[]) {
 // blink thread variables
 static THD_WORKING_AREA(blinkThreadArea, 128);
 thread_t *blinkThread = NULL;
+SEMAPHORE_DECL(blinkWaiter, 0);
 
 static THD_FUNCTION(blinkFunction, arg) {
 	// function to blink a GPIO continuously until termination was requested
@@ -296,9 +297,9 @@ static THD_FUNCTION(blinkFunction, arg) {
 	palSetPadMode(pinPorts[i].gpio, pinPorts[i].pin, PAL_MODE_OUTPUT_PUSHPULL);
 	while (!chThdShouldTerminateX()){
 		palSetPad(pinPorts[i].gpio, pinPorts[i].pin);
-		chThdSleepSeconds(1);
+		chSemWaitTimeout(&blinkWaiter, CH_CFG_ST_FREQUENCY);
 		palClearPad(pinPorts[i].gpio, pinPorts[i].pin);
-		chThdSleepSeconds(1);
+		chSemWaitTimeout(&blinkWaiter, CH_CFG_ST_FREQUENCY);
 	}
 	// set the GPIO as input so it is tristated when unused
 	palSetPadMode(pinPorts[i].gpio, pinPorts[i].pin, PAL_MODE_INPUT);
@@ -350,6 +351,7 @@ static void cmd_blink(BaseSequentialStream *chp, int argc, char *argv[]) {
 			chprintf(chp, "no running blinkThread found, nothing to turn off!\r\n");
 		} else {
 			chThdTerminate(blinkThread);
+			chSemReset(&blinkWaiter, 0);
 			chThdWait(blinkThread);
 			blinkThread = NULL;
 			chprintf(chp, "Ok\r\n");
