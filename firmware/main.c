@@ -281,6 +281,10 @@ static void cmd_gpio(BaseSequentialStream *chp, int argc, char *argv[]) {
 	chprintf(chp, "Bad gpio '%s'\r\n", pOpt);
 }
 
+
+
+
+
 // blink thread variables
 static THD_WORKING_AREA(blinkThreadArea, 128);
 thread_t *blinkThread = NULL;
@@ -371,6 +375,7 @@ exit_with_usage:
 
 	chprintf(chp, "\r\n");
 }
+
 
 
 
@@ -1230,9 +1235,11 @@ static int scanSensors(void) {
 		// Temperature sensor (ADT7410)
 		for (j = 0; j < 4; j++) {
 			uint8_t id[2];
-			msg_t m = i2cMasterTransmitTimeout(i2cdx, base_addr_t + j, &regID_t, 1, id, 2, 100);	// Have to read 2 bytes, since 1 byte reads don't work because of faulty I2C Cell in the STM32s
-			if (m == MSG_OK && i2cGetErrors(i2cdx) == I2C_NO_ERROR && manfID_t == (id[0] >> 3)) {		// Found sensor
-				sensorList[numSensors++] = (i2cSensor){i2cdx, base_addr_t + j, TEMP, 0x00, &decodeTempAD, true};	// Add entry to our sensorList
+			// Have to read 2 bytes, since 1 byte reads don't work because of faulty I2C Cell in the STM32s
+			msg_t m = i2cMasterTransmitTimeout(i2cdx, base_addr_t + j, &regID_t, 1, id, 2, 100);
+			if (m == MSG_OK && i2cGetErrors(i2cdx) == I2C_NO_ERROR && manfID_t == (id[0] >> 3)) {
+				// Add entry for found sensor
+				sensorList[numSensors++] = (i2cSensor){i2cdx, base_addr_t + j, TEMP, 0x00, &decodeTempAD, true};
 
 				// Configure sensor
 				uint8_t data[2];
@@ -1244,12 +1251,14 @@ static int scanSensors(void) {
 		wdtAdd(1);
 
 		// Humidity sensor (SI7021)
-		uint8_t id[6];	// Product ID stored in first byte | Format: 2 Bytes followed by CRC followed by 2 Bytes followed by CRC
+		uint8_t id[6];
+		// Product ID stored in first byte | Format: 2 Bytes followed by CRC followed by 2 Bytes followed by CRC
 		msg_t m = i2cMasterTransmitTimeout(i2cdx, base_addr_h, cmdID_h, 2, id, 4, 100);
-		if (m == MSG_OK && i2cGetErrors(i2cdx) == I2C_NO_ERROR && (id[0] == prodID_h[0] || id[0] == prodID_h[1] || id[0] == prodID_h[2])) {	// Found sensor
-			// This sensor can measure humidity as well as temperature, so we add two entries for it
+		if ((m == MSG_OK && i2cGetErrors(i2cdx) == I2C_NO_ERROR)
+				&& (id[0] == prodID_h[0] || id[0] == prodID_h[1] || id[0] == prodID_h[2])) {
+			// Found sensor that can measure humidity as well as temperature
 			sensorList[numSensors++] = (i2cSensor){i2cdx, base_addr_h, TEMP, 0xE0, &decodeTempSI, true};
-			sensorList[numSensors++] = (i2cSensor){i2cdx, base_addr_h, HUMID, 0xF5, &decodeHumidSI, false};				// Add entry to our sensorList
+			sensorList[numSensors++] = (i2cSensor){i2cdx, base_addr_h, HUMID, 0xF5, &decodeHumidSI, false};
 
 			// Configure sensor
 			uint8_t data[2];
@@ -1712,7 +1721,7 @@ static void cmd_setname(BaseSequentialStream *chp, int argc, char *argv[]) {
 	chprintf(chp, "copybuffer resides at 0x%08x\r\n", copybuffer);
   memset(copybuffer, 0xff, sizeof(copybuffer));
   for (int i = 0; i < nameLen; ++i) {
-    if (!isalnum(name[i]) && ('_' != name[i])) {
+    if (!isalnum((int)name[i]) && ('_' != name[i])) {
       chprintf(chp, "Name contains invalid character %c (0x%02x).\r\n", name[i], (int)name[i]);
       goto exit_with_usage;
     }
