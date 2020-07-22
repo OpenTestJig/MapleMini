@@ -297,9 +297,9 @@ static THD_FUNCTION(blinkFunction, arg) {
 	palSetPadMode(pinPorts[i].gpio, pinPorts[i].pin, PAL_MODE_OUTPUT_PUSHPULL);
 	while (!chThdShouldTerminateX()){
 		palSetPad(pinPorts[i].gpio, pinPorts[i].pin);
-		chSemWaitTimeout(&blinkWaiter, CH_CFG_ST_FREQUENCY);
+		chSemWaitTimeout(&blinkWaiter, CH_CFG_ST_FREQUENCY/2);
 		palClearPad(pinPorts[i].gpio, pinPorts[i].pin);
-		chSemWaitTimeout(&blinkWaiter, CH_CFG_ST_FREQUENCY);
+		chSemWaitTimeout(&blinkWaiter, CH_CFG_ST_FREQUENCY/2);
 	}
 	// set the GPIO as input so it is tristated when unused
 	palSetPadMode(pinPorts[i].gpio, pinPorts[i].pin, PAL_MODE_INPUT);
